@@ -7,6 +7,9 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import com.gerenciador.api.event.RecursoCriadoEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,12 +27,13 @@ import com.gerenciador.api.repository.CategoriaRepository;
 public class CategoriaResource {
 
 	private CategoriaRepository categoriaRepository;
-	
-	public CategoriaResource(CategoriaRepository categoriaRepository) {
-		super();
+	private ApplicationEventPublisher publisher;
+
+	public CategoriaResource(CategoriaRepository categoriaRepository, ApplicationEventPublisher publisher) {
 		this.categoriaRepository = categoriaRepository;
+		this.publisher = publisher;
 	}
-	
+
 	@GetMapping
 	public List<Categoria> listar() {
 		return categoriaRepository.findAll();
@@ -38,12 +42,8 @@ public class CategoriaResource {
 	@PostMapping	
 	public ResponseEntity<Categoria> criar(@Valid @RequestBody Categoria categoria, HttpServletResponse response) {
 		Categoria categoriaSalva = categoriaRepository.save(categoria);
-		
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{codigo}")
-			.buildAndExpand(categoriaSalva.getCodigo()).toUri();
-		response.setHeader("Location", uri.toASCIIString());
-		
-		return ResponseEntity.created(uri).body(categoriaSalva);
+		publisher.publishEvent(new RecursoCriadoEvent(this, response, categoriaSalva.getCodigo()));
+		return ResponseEntity.status(HttpStatus.CREATED).body(categoriaSalva);
 	}
 	
 	@GetMapping("/{codigo}")
