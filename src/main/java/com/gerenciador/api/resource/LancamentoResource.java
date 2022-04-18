@@ -3,6 +3,7 @@ package com.gerenciador.api.resource;
 import com.gerenciador.api.event.RecursoCriadoEvent;
 import com.gerenciador.api.model.Lancamento;
 import com.gerenciador.api.repository.LancamentoRepository;
+import com.gerenciador.api.service.LancamentoService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,12 @@ import java.util.Optional;
 public class LancamentoResource {
 
     private LancamentoRepository lancamentoRepository;
+    private LancamentoService lancamentoService;
     private ApplicationEventPublisher publisher;
 
-    public LancamentoResource(LancamentoRepository lancamentoRepository, ApplicationEventPublisher publisher) {
+    public LancamentoResource(LancamentoRepository lancamentoRepository, LancamentoService lancamentoService, ApplicationEventPublisher publisher) {
         this.lancamentoRepository = lancamentoRepository;
+        this.lancamentoService = lancamentoService;
         this.publisher = publisher;
     }
 
@@ -38,7 +41,7 @@ public class LancamentoResource {
 
     @PostMapping
     public ResponseEntity<Lancamento> salvar(@Valid @RequestBody Lancamento lancamento, HttpServletResponse response) {
-        Lancamento lancamentoSalvo = lancamentoRepository.save(lancamento);
+        Lancamento lancamentoSalvo = lancamentoService.salvar(lancamento);
         publisher.publishEvent(new RecursoCriadoEvent(this, response, lancamentoSalvo.getCodigo()));
         return ResponseEntity.status(HttpStatus.CREATED).body(lancamentoSalvo);
     }
