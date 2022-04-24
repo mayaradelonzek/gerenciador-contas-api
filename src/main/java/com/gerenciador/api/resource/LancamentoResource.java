@@ -4,6 +4,7 @@ import com.gerenciador.api.event.RecursoCriadoEvent;
 import com.gerenciador.api.exceptionhandler.GerenciadorExceptionHandler;
 import com.gerenciador.api.model.Lancamento;
 import com.gerenciador.api.repository.LancamentoRepository;
+import com.gerenciador.api.repository.filter.LancamentoFilter;
 import com.gerenciador.api.service.LancamentoService;
 import com.gerenciador.api.service.exception.PessoaInexistenteOuInativaException;
 
@@ -37,8 +38,8 @@ public class LancamentoResource {
     }
 
     @GetMapping
-    public List<Lancamento> listarTodos() {
-        return lancamentoRepository.findAll();
+    public List<Lancamento> pesquisar(LancamentoFilter lancamentoFilter) {
+        return lancamentoRepository.filtrar(lancamentoFilter);
     }
 
     @GetMapping("/{codigo}")
